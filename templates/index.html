@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Predictive Maintenance</title>
+  <link rel="stylesheet" href="/static/css/style.css"/>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-brand">Predictive Maintenance</div>
+  <div class="nav-links">
+    <a href="/" class="active">Predict</a>
+    <a href="/history">History</a>
+  </div>
+</nav>
+
+<main class="container">
+
+  <div class="page-header">
+    <h1>Machine Failure Prediction</h1>
+    <p>Enter operational sensor readings to predict whether the machine is at risk of failure.</p>
+  </div>
+
+  {% if errors %}
+  <div class="alert alert-error">
+    <strong>⚠ Fix the following errors:</strong>
+    <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+  </div>
+  {% endif %}
+
+  {% if result %}
+  <div class="result-card {{ 'result-fail' if result.prediction == 1 else 'result-ok' }}">
+    <div class="result-icon">{{ '🔴' if result.prediction == 1 else '🟢' }}</div>
+    <div class="result-body">
+      <div class="result-label">
+        {{ 'MACHINE FAILURE PREDICTED' if result.prediction == 1 else 'NO FAILURE DETECTED' }}
+      </div>
+      <div class="result-prob">Failure probability: <strong>{{ result.probability }}%</strong></div>
+      <div class="result-time">Recorded at {{ result.timestamp }}</div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="card">
+    <h2 class="card-title">Sensor Input</h2>
+    <form method="POST" action="/predict" class="pred-form">
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="machine_type">Machine Type</label>
+          <select id="machine_type" name="machine_type" required>
+            {% for opt in type_options %}
+            <option value="{{ opt }}" {{ 'selected' if form and form.machine_type == opt }}>{{ opt }}</option>
+            {% endfor %}
+          </select>
+          <span class="hint">H = High quality &nbsp;|&nbsp; M = Medium &nbsp;|&nbsp; L = Low</span>
+        </div>
+        <div class="form-group">
+          <label for="tool_wear">Tool Wear (min)</label>
+          <input type="number" id="tool_wear" name="tool_wear" min="0" max="300"
+            value="{{ form.tool_wear if form else 108 }}" required/>
+          <span class="hint">Range: 0 – 300 minutes</span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="air_temp">Air Temperature (K)</label>
+          <input type="number" id="air_temp" name="air_temp" step="0.1" min="290" max="310"
+            value="{{ form.air_temp if form else 298.1 }}" required/>
+          <span class="hint">Range: 290 – 310 K</span>
+        </div>
+        <div class="form-group">
+          <label for="process_temp">Process Temperature (K)</label>
+          <input type="number" id="process_temp" name="process_temp" step="0.1" min="295" max="315"
+            value="{{ form.process_temp if form else 308.6 }}" required/>
+          <span class="hint">Range: 295 – 315 K &nbsp;(must be &gt; Air Temp)</span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="rotational_speed">Rotational Speed (rpm)</label>
+          <input type="number" id="rotational_speed" name="rotational_speed" min="1000" max="3000"
+            value="{{ form.rotational_speed if form else 1551 }}" required/>
+          <span class="hint">Range: 1000 – 3000 rpm</span>
+        </div>
+        <div class="form-group">
+          <label for="torque">Torque (Nm)</label>
+          <input type="number" id="torque" name="torque" step="0.1" min="0" max="100"
+            value="{{ form.torque if form else 42.8 }}" required/>
+          <span class="hint">Range: 0 – 100 Nm</span>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-predict">Run Prediction</button>
+    </form>
+  </div>
+
+  <div class="info-grid">
+    <div class="info-card">
+      <div class="info-icon"></div>
+      <div class="info-title">Model</div>
+      <div class="info-desc">Random Forest Classifier (tuned) — 98.6% accuracy on AI4I 2020 dataset</div>
+    </div>
+    <div class="info-card">
+      <div class="info-icon"></div>
+      <div class="info-title">Features</div>
+      <div class="info-desc">Type · Air Temp · Process Temp · RPM · Torque · Tool Wear · Temp Difference</div>
+    </div>
+    <div class="info-card">
+      <div class="info-icon"></div>
+      <div class="info-title">History</div>
+      <div class="info-desc">All predictions stored in SQLite · exportable as CSV or PDF</div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="footer">Predictive Maintenance · AI4I 2020 Dataset · Random Forest Classifier</footer>
+</body>
+</html>

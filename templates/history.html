@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>History — Predictive Maintenance</title>
+  <link rel="stylesheet" href="/static/css/style.css"/>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-brand">Predictive Maintenance</div>
+  <div class="nav-links">
+    <a href="/">Predict</a>
+    <a href="/history" class="active">History</a>
+  </div>
+</nav>
+
+<main class="container">
+
+  <div class="page-header">
+    <h1>Prediction History</h1>
+    <p>All past predictions stored in the local SQLite database.</p>
+  </div>
+
+  {% if rows %}
+  <div class="export-bar">
+    <span class="record-count">{{ rows|length }} record{{ 's' if rows|length != 1 }}</span>
+    <div class="export-btns">
+      <a href="/export/csv" class="btn-export btn-csv">⬇ Export CSV</a>
+      <a href="/export/pdf" class="btn-export btn-pdf">⬇ Export PDF</a>
+    </div>
+  </div>
+
+  <div class="table-wrapper">
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>#</th><th>Timestamp</th><th>Type</th>
+          <th>Air Temp</th><th>Proc Temp</th><th>RPM</th>
+          <th>Torque</th><th>Wear</th><th>Result</th><th>Prob %</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+        <tr class="{{ 'row-fail' if r.prediction == 1 }}">
+          <td>{{ r.id }}</td>
+          <td>{{ r.timestamp }}</td>
+          <td><span class="type-badge">{{ r.machine_type }}</span></td>
+          <td>{{ r.air_temp }}</td>
+          <td>{{ r.process_temp }}</td>
+          <td>{{ r.rotational_speed }}</td>
+          <td>{{ r.torque }}</td>
+          <td>{{ r.tool_wear }} min</td>
+          <td>
+            {% if r.prediction == 1 %}
+              <span class="badge badge-fail">⚠ FAILURE</span>
+            {% else %}
+              <span class="badge badge-ok">✔ OK</span>
+            {% endif %}
+          </td>
+          <td>{{ r.probability }}%</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">📭</div>
+    <p>No predictions yet. <a href="/">Make your first prediction →</a></p>
+  </div>
+  {% endif %}
+
+</main>
+
+<footer class="footer">Predictive Maintenance · AI4I 2020 Dataset · Random Forest Classifier</footer>
+</body>
+</html>

@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+scikit-learn==1.6.0
+pandas
+numpy
+jinja2
+python-multipart
+reportlab
